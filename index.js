@@ -1,18 +1,24 @@
 export default {
   async fetch(request, env) {
-    const anthropicResponse = await fetch("https://api.anthropic.com/v1/complete", {
+
+    // ---- Anthropic ----
+    const anthropicResponse = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${env.ANTHROPIC_API_KEY}`
+        "x-api-key": env.ANTHROPIC_API_KEY,          // ✅ correct header
+        "anthropic-version": "2023-06-01"             // ✅ required header
       },
       body: JSON.stringify({
-        model: "claude-v1",
-        prompt: "Hello, Anthropic!",
-        max_tokens_to_sample: 50
+        model: "claude-sonnet-4-6",                   // ✅ current model
+        max_tokens: 50,                               // ✅ renamed from max_tokens_to_sample
+        messages: [
+          { role: "user", content: "Hello, Anthropic!" }
+        ]
       })
     }).then(r => r.json());
 
+    // ---- MoltBot ----
     const moltbotResponse = await fetch("https://api.moltbot.com/query", {
       method: "POST",
       headers: {
@@ -22,6 +28,7 @@ export default {
       body: JSON.stringify({ prompt: "Hello, MoltBot!" })
     }).then(r => r.json());
 
+    // ---- Response ----
     return new Response(JSON.stringify({
       anthropic: anthropicResponse,
       moltbot: moltbotResponse
@@ -30,4 +37,3 @@ export default {
     });
   }
 }
-
